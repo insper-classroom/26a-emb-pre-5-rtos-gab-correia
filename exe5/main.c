@@ -21,7 +21,7 @@
 #define LED_PIN_R 5
 #define LED_PIN_Y 10
 
-QueueHandle_t xQueueBtnEvents;
+QueueHandle_t xQueueBtn;
 SemaphoreHandle_t xSemaphoreLedR;
 SemaphoreHandle_t xSemaphoreLedY;
 
@@ -31,7 +31,7 @@ void btn_callback(uint gpio, uint32_t events) {
     }
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendFromISR(xQueueBtnEvents, &gpio, &xHigherPriorityTaskWoken);
+    xQueueSendFromISR(xQueueBtn, &gpio, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
@@ -107,7 +107,7 @@ void btn_task(void* p) {
     TickType_t last_y = 0;
 
     while (true) {
-        if (xQueueReceive(xQueueBtnEvents, &gpio, portMAX_DELAY) == pdTRUE) {
+        if (xQueueReceive(xQueueBtn, &gpio, portMAX_DELAY) == pdTRUE) {
             TickType_t now = xTaskGetTickCount();
 
             if (gpio == BTN_PIN_R) {
@@ -130,7 +130,7 @@ void btn_task(void* p) {
 int main() {
     stdio_init_all();
 
-    xQueueBtnEvents = xQueueCreate(8, sizeof(uint));
+    xQueueBtn = xQueueCreate(8, sizeof(uint));
     xSemaphoreLedR = xSemaphoreCreateBinary();
     xSemaphoreLedY = xSemaphoreCreateBinary();
 
